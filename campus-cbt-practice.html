@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Campus CBT Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     TOP BAR (shared, hidden on quiz page)
+============================================================ -->
+<div class="top-bar" id="topBar">
+  <div class="brand">
+    <div class="seal">CBT</div>
+    <div>
+      <h1>CBT Practice</h1>
+      <div class="tag">Offline exam simulator</div>
+    </div>
+  </div>
+  <button class="icon-btn" id="darkToggle" title="Toggle dark mode">🌙</button>
+</div>
+
+<!-- ============================================================
+     HOME PAGE
+============================================================ -->
+<div id="homePage">
+  <div class="wrap">
+    <div class="welcome-card">
+      <div class="ticket-num" id="ticketNum">CANDIDATE No. ------</div>
+      <h2>Welcome back.</h2>
+      <p>Pick a subject below to generate a fresh, randomly-ordered practice paper. Your progress, bookmarks and scores are saved on this device only.</p>
+    </div>
+
+    <div class="continue-banner hidden" id="continueBanner">
+      <div class="info">You have an unfinished paper: <b id="continueSubject"></b> — question <span id="continueProgress"></span></div>
+      <button class="btn btn-primary" id="continueBtn">Resume paper</button>
+    </div>
+
+    <div class="section-title">Performance summary</div>
+    <div class="stats-strip">
+      <div class="stat-box"><div class="v" id="statTotal">0</div><div class="l">Papers taken</div></div>
+      <div class="stat-box"><div class="v" id="statAvg">0%</div><div class="l">Average score</div></div>
+      <div class="stat-box"><div class="v" id="statBest">0%</div><div class="l">Best score</div></div>
+      <div class="stat-box"><div class="v" id="statAnswered">0</div><div class="l">Questions answered</div></div>
+    </div>
+
+    <div class="section-title">Subjects</div>
+    <div class="subject-grid" id="subjectGrid"></div>
+
+    <div class="section-title">Recent papers</div>
+    <div class="recent-list" id="recentList"></div>
+
+    <div class="section-title">Bookmarks</div>
+    <div id="homeBookmarkPreview" class="bookmark-list"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     QUIZ SETUP PAGE
+============================================================ -->
+<div id="setupPage" class="hidden">
+  <div class="wrap">
+    <button class="back-link" id="setupBack">← Back to home</button>
+    <div class="setup-card">
+      <h2 id="setupSubjectName">Mathematics</h2>
+      <div class="sub" id="setupSubjectMeta">0 questions available</div>
+
+      <div class="field">
+        <label>Mode</label>
+        <div class="mode-pick">
+          <button type="button" class="active" data-mode="CBT">CBT (timed)</button>
+          <button type="button" data-mode="Practice">Practice (no timer)</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Number of questions</label>
+          <select id="countSelect"></select>
+        </div>
+        <div class="field">
+          <label>Timer</label>
+          <select id="timerSelect">
+            <option value="5">5 minutes</option>
+            <option value="10" selected>10 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="20">20 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="startQuizBtn" style="width:100%;padding:13px;font-size:15px;margin-top:6px;">Start paper</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     QUIZ PAGE
+============================================================ -->
+<div id="quizPage" class="hidden">
+  <div class="quiz-topbar">
+    <div class="subj"><span id="quizSubjectName">Mathematics</span><small id="quizModeLabel">CBT MODE</small></div>
+    <div class="counter"><span id="qCurrentNum">1</span> / <span id="qTotalNum">20</span></div>
+    <div class="timer" id="quizTimerDisplay">10:00</div>
+  </div>
+  <div class="quiz-progress"><div class="fill" id="quizProgressFill"></div></div>
+
+  <div class="quiz-main">
+    <div class="question-col">
+      <div class="q-card">
+        <div class="q-eyebrow">
+          <div class="q-badge" id="qBadge">1</div>
+          <div class="topic" id="qTopic">Topic · Difficulty</div>
+        </div>
+        <div class="q-text" id="qText">Loading question…</div>
+        <div class="omr-list" id="omrList"></div>
+        <div class="q-footer">
+          <button class="bookmark-toggle" id="bookmarkBtn">☆ Bookmark</button>
+          <button class="btn btn-outline" id="skipBtn">Skip</button>
+          <button class="btn btn-outline" id="prevBtn" disabled>◀ Previous</button>
+          <button class="btn btn-primary" id="nextBtn">Next ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="palette-col">
+      <div class="palette-box">
+        <h4>Question palette</h4>
+        <div class="palette-grid" id="paletteGrid"></div>
+        <div class="legend">
+          <span><i style="background:var(--paper-2);border:1px solid var(--line);"></i>Not visited</span>
+          <span><i style="background:var(--navy);"></i>Current</span>
+          <span><i style="background:var(--success);"></i>Answered</span>
+          <span><i style="background:#e9b872;"></i>Skipped</span>
+          <span><i style="background:#e6dfca;outline:2px solid var(--warn);"></i>Bookmarked</span>
+        </div>
+        <div class="submit-block">
+          <button class="btn btn-danger" id="submitBtn" style="width:100%;">Submit paper</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RESULTS PAGE
+============================================================ -->
+<div id="resultsPage" class="hidden">
+  <div class="wrap results-wrap">
+    <div class="results-card">
+      <h2>Paper submitted</h2>
+      <div class="sub" id="resultsSub">Mathematics · CBT mode</div>
+      <div class="score-ring">
+        <svg width="170" height="170" viewBox="0 0 170 170">
+          <circle class="bg" cx="85" cy="85" r="70"/>
+          <circle class="fg" id="scoreArc" cx="85" cy="85" r="70"/>
+        </svg>
+        <div class="txt">
+          <div class="pct" id="scorePct">0%</div>
+          <div class="frac" id="scoreFrac">0 / 0</div>
+        </div>
+      </div>
+      <div class="results-grid">
+        <div class="r-stat correct"><div class="v" id="rCorrect">0</div><div class="l">Correct</div></div>
+        <div class="r-stat wrong"><div class="v" id="rWrong">0</div><div class="l">Wrong</div></div>
+        <div class="r-stat"><div class="v" id="rSkipped">0</div><div class="l">Skipped</div></div>
+        <div class="r-stat"><div class="v" id="rTime">0:00</div><div class="l">Time used</div></div>
+      </div>
+      <div class="results-actions">
+        <button class="btn btn-primary" id="reviewBtn">Review answers</button>
+        <button class="btn btn-outline" id="retryWrongBtn">Retry wrong questions</button>
+        <button class="btn btn-ghost" id="resultsHomeBtn">Back to home</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REVIEW PAGE
+============================================================ -->
+<div id="reviewPage" class="hidden">
+  <div class="wrap review-wrap">
+    <div class="review-topbar">
+      <h2>Review</h2>
+      <button class="btn btn-outline" id="reviewBack">← Back to results</button>
+    </div>
+    <div class="review-card" id="reviewCard"></div>
+    <div class="review-nav">
+      <button class="btn btn-outline" id="reviewPrev" disabled>◀ Previous</button>
+      <button class="btn btn-primary" id="reviewNext">Next ▶</button>
+    </div>
+    <div class="review-jump" id="reviewJump"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     BOOKMARKS PAGE
+============================================================ -->
+<div id="bookmarksPage" class="hidden">
+  <div class="wrap">
+    <button class="back-link" id="bookmarksBack">← Back to home</button>
+    <div class="page-header">
+      <h2>Bookmarked questions</h2>
+      <button class="btn btn-outline" id="practiceBookmarksBtn">Practice all bookmarks</button>
+    </div>
+    <div class="bookmark-list" id="bookmarksFullList"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL
+============================================================ -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Submit paper?</h3>
+    <p id="modalMessage"></p>
+    <div class="tally hidden" id="modalTally">
+      <div><div class="n" id="modalAnswered">0</div><div class="l">Answered</div></div>
+      <div><div class="n" id="modalUnanswered">0</div><div class="l">Unanswered</div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCancel">Cancel</button>
+      <button class="btn btn-danger" id="modalConfirm">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>
